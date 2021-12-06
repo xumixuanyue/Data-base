@@ -40,7 +40,6 @@ INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::GetValue(const KeyType &key,
                               std::vector<ValueType> &result,
                               Transaction *transaction) {
-    // ����key�ҵ�Ҷ�ӽڵ�ҳ��
     auto* leaf = FindLeafPage(key, false, Operation::READONLY, transaction);
     bool ret = false;
     if (leaf != nullptr){
@@ -49,8 +48,6 @@ bool BPLUSTREE_TYPE::GetValue(const KeyType &key,
             result.push_back(value);
             ret = true;
         }
-
-        // ����
         UnlockUnpinPages(Operation::READONLY, transaction);
 
         if (transaction == nullptr){
@@ -77,10 +74,8 @@ bool BPLUSTREE_TYPE::GetValue(const KeyType &key,
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value,
                             Transaction *transaction) {
-  // ������
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    // �����Ϊ�վ��½�һ����
     if (IsEmpty()){
       StartNewTree(key, value);
       return true;
@@ -104,7 +99,6 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
     auto root =
         reinterpret_cast<BPlusTreeLeafPage<KeyType, ValueType,
         KeyComparator>*>(page->GetData());
-    // ���¸��ڵ�ҳ��id
     UpdateRootPageId(true);
     root->Init(root_page_id_, INVALID_PAGE_ID);
     root->Insert(key, value, comparator_);
@@ -128,18 +122,14 @@ bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value,
         return false;
     }
     ValueType v;
-    // ���ڸü�������false
     if (leaf->Lookup(key, v, comparator_)){
         UnlockUnpinPages(Operation::INSERT, transaction);
         return false;
     }
-
-    // ����Ҫ����ֱ�Ӳ���
     if (leaf->GetSize() < leaf->GetMaxSize()){
         leaf->Insert(key, value, comparator_);
     }
     else{
-        // ���ѳ�һ����Ҷ�ӽ�ҳ��
         auto* leaf2 = Split<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>>(leaf);
         if (comparator_(key, leaf2->KeyAt(0)) < 0){
             leaf->Insert(key, value, comparator_);
@@ -147,8 +137,6 @@ bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value,
         else{
             leaf2->Insert(key, value, comparator_);
         }
-
-        // ����ǰ���ϵ
         if (comparator_(leaf->KeyAt(0), leaf2->KeyAt(0)) < 0){
             leaf2->SetNextPageId(leaf->GetNextPageId());
             leaf->SetNextPageId(leaf2->GetPageId());
@@ -156,8 +144,6 @@ bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value,
         else{
             leaf2->SetNextPageId(leaf->GetPageId());
         }
-
-        // �����ѵĽڵ���뵽���ڵ�
         InsertIntoParent(leaf, leaf2->KeyAt(0), leaf2, transaction);
     }
 
@@ -200,7 +186,6 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node,
                                       const KeyType &key,
                                       BPlusTreePage *new_node,
                                       Transaction *transaction) {
-    // ���old_node�Ǹ��ڵ㣬����Ҫ������һ����ҳ��
     if (old_node->IsRootPage()){
         auto* page = buffer_pool_manager_->NewPage(root_page_id_);
         if (page == nullptr){
@@ -217,7 +202,6 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node,
         old_node->SetParentPageId(root_page_id_);
         new_node->SetParentPageId(root_page_id_);
 
-        // ���¸��ڵ�ҳ��id
         UpdateRootPageId(false);
         buffer_pool_manager_->UnpinPage(new_node->GetPageId(), true);
         buffer_pool_manager_->UnpinPage(root->GetPageId(), true);
@@ -232,7 +216,6 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node,
             reinterpret_cast<BPlusTreeInternalPage<KeyType, page_id_t,
             KeyComparator>*>(page->GetData());
 
-        // ���ڵ㻹�пռ�
         if (internal->GetSize() < internal->GetMaxSize()){
             internal->InsertNodeAfter(old_node->GetPageId(), key, new_node->GetPageId());
             new_node->SetParentPageId(internal->GetPageId());
@@ -470,7 +453,6 @@ void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) {
-    // ���ɾ�������һ���ڵ�
     if (old_root_node->IsLeafPage()){
         if (old_root_node->GetSize() == 0){
             root_page_id_ = INVALID_PAGE_ID;
@@ -479,8 +461,6 @@ bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) {
         }
         return false;
     }
-
-    // ɾ���˻������һ���ڵ�
     if (old_root_node->GetSize() == 1){
         auto root =
             reinterpret_cast<BPlusTreeInternalPage<KeyType, page_id_t,
@@ -637,8 +617,6 @@ B_PLUS_TREE_LEAF_PAGE_TYPE* BPLUSTREE_TYPE::
         }
         node = reinterpret_cast<BPlusTreePage*>(child->GetData());
         assert(node->GetParentPageId() == parent_page_id);
-
-        // ����ǰ�ȫ�ģ����ͷŸ��ڵ��ǵ���
         if (op != Operation::READONLY && isSafe(node, op)){
             UnlockUnpinPages(op, transaction);
         }
