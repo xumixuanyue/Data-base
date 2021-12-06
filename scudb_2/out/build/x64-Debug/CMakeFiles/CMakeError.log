@@ -1,0 +1,21 @@
+Determining if the include file pthread.h exists failed with the following output:
+Change Dir: D:/Users/lenovo/Desktop/大三上/数据库系统原理/实验课/scudb_1/out/build/x64-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):E:/my_app/Visual Studio IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_830f0 && [1/2] Building C object CMakeFiles\cmTC_830f0.dir\CheckIncludeFile.c.obj
+FAILED: CMakeFiles/cmTC_830f0.dir/CheckIncludeFile.c.obj 
+E:\my_app\VISUAL~2\VC\Tools\MSVC\1429~1.301\bin\Hostx64\x64\cl.exe  /nologo   /DWIN32 /D_WINDOWS /W3  /MDd /Zi /Ob0 /Od /RTC1 /showIncludes /FoCMakeFiles\cmTC_830f0.dir\CheckIncludeFile.c.obj /FdCMakeFiles\cmTC_830f0.dir\ /FS -c CheckIncludeFile.c
+CheckIncludeFile.c(1): fatal error C1083: 无法打开包括文件: “pthread.h”: No such file or directory
+ninja: build stopped: subcommand failed.
+
+
+
+Performing C++ SOURCE FILE Test COMPILER_SUPPORTS_CXX1y failed with the following output:
+Change Dir: D:/Users/lenovo/Desktop/大三上/数据库系统原理/实验课/scudb_1/out/build/x64-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):E:/my_app/Visual Studio IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_26fae && [1/2] Building CXX object CMakeFiles\cmTC_26fae.dir\src.cxx.obj
+cl: 命令行 warning D9002 :忽略未知选项“-std=c++1y”
+[2/2] Linking CXX executable cmTC_26fae.exe
+
+
+Source file was:
+int main() { return 0; }
